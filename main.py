@@ -35,11 +35,11 @@ def gerar_relatorio_noticias():
     ]
     contexto_completo = """
 
-            1 - https://news.mit.edu/topic/artificial-intelligence2
-            2 - https://www.artificialintelligence-news.com/
-            3 - https://thenextweb.com/topic/ai
-            4 - https://www.topbots.com/
-            5 - https://aibusiness.com/
+            1 - site que voce quer pegar a noticia
+            2 - site que voce quer pegar a noticia
+            3 - site que voce quer pegar a noticia
+            4 - site que voce quer pegar a noticia
+            5 - site que voce quer pegar a noticia
           
             """
 
@@ -79,7 +79,7 @@ def salvar_relatorio(conteudo: str, data_referencia: str) -> str:
 
 # === ENVIA O RELATÓRIO POR E-MAIL ===
 async def enviar_email(conteudo: str, caminho_arquivo: str, data_referencia: str):
-    destinatario = "coimbrawebs@gmail.com"
+    destinatario = "seuemail@email.com"
     assunto = f"Relatório de Notícias - {data_referencia}"
 
     try:
