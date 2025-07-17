@@ -1,11 +1,11 @@
 import asyncio
 import os
 from datetime import datetime, timedelta
+
 import yagmail
 from dotenv import load_dotenv
-from tavily import TavilyClient
 from langchain_ollama import OllamaLLM  # Nova classe atualizada
-
+from tavily import TavilyClient
 
 # === CARREGA VARIÁVEIS DO .env ===
 load_dotenv()
@@ -21,7 +21,7 @@ TAVILY_API_KEY = os.getenv("TAVILY_API_KEY")  # também no .env
 tavily_client = TavilyClient(api_key=TAVILY_API_KEY)
 
 # === MODELO LOCAL OLLAMA ===
-llama_local = OllamaLLM(model="llama3.1:8b", temperature=0.2)
+llama_local = OllamaLLM(model="gemma3", temperature=0.2)
 
 
 # === FUNÇÃO PARA GERAR O RELATÓRIO DE NOTÍCIAS ===
@@ -35,11 +35,8 @@ def gerar_relatorio_noticias():
     ]
     contexto_completo = """
 
-            1 - site que voce quer pegar a noticia
-            2 - site que voce quer pegar a noticia
-            3 - site que voce quer pegar a noticia
-            4 - site que voce quer pegar a noticia
-            5 - site que voce quer pegar a noticia
+            1 - https://go.dev/blog/
+            2 - https://dev.to/t/news
           
             """
 
@@ -68,6 +65,42 @@ Você é um agente jornalista.
     return resposta, data_referencia
 
 
+# === GERA FORMATO PARA LINKEDIN ===
+def gerar_formato_linkedin(conteudo: str, data_referencia: str) -> str:
+    """Formata o conteúdo para ser mais adequado ao LinkedIn"""
+
+    # Prompt para reformatar para LinkedIn
+    prompt_linkedin = f"""
+Reformate o seguinte relatório de notícias para ser postado no LinkedIn de forma mais atrativa e profissional:
+
+{conteudo}
+
+INSTRUÇÕES:
+- Use emojis relevantes para tecnologia e IA
+- Mantenha um tom profissional mas engajador
+- Divida em seções claras com bullets
+- Adicione hashtags relevantes no final (#IA #Tecnologia #Inovacao #TechNews)
+- Limite a 1300 caracteres (limite do LinkedIn)
+- Mantenha os links das fontes
+- Use formato que incentive engajamento
+"""
+
+    resposta_linkedin = llama_local.invoke(prompt_linkedin)
+
+    # Salva também a versão LinkedIn
+    nome_arquivo_linkedin = f"linkedin_post_{data_referencia}.txt"
+    with open(nome_arquivo_linkedin, "w", encoding="utf-8") as f:
+        f.write(resposta_linkedin)
+
+    print(f"\n🎯 POST PARA LINKEDIN GERADO:")
+    print("=" * 50)
+    print(resposta_linkedin)
+    print("=" * 50)
+    print(f"📁 Salvo em: {nome_arquivo_linkedin}")
+
+    return resposta_linkedin
+
+
 # === SALVA O RELATÓRIO EM ARQUIVO ===
 def salvar_relatorio(conteudo: str, data_referencia: str) -> str:
     nome_arquivo = f"relatorio_noticias_{data_referencia}.md"
@@ -79,7 +112,7 @@ def salvar_relatorio(conteudo: str, data_referencia: str) -> str:
 
 # === ENVIA O RELATÓRIO POR E-MAIL ===
 async def enviar_email(conteudo: str, caminho_arquivo: str, data_referencia: str):
-    destinatario = "seuemail@email.com"
+    destinatario = "coimbrawebs@gmail.com"
     assunto = f"Relatório de Notícias - {data_referencia}"
 
     try:
@@ -103,7 +136,19 @@ async def main():
         print("\n=== RELATÓRIO ===\n", relatorio)
 
         arquivo = salvar_relatorio(relatorio, data_referencia)
+
+        # Gera versão para LinkedIn
+        gerar_formato_linkedin(relatorio, data_referencia)
+
+        # Email comentado por problemas de autenticação
         await enviar_email(relatorio, arquivo, data_referencia)
+
+        print(f"\n✅ Processo concluído!")
+        print(f"📱 Versão LinkedIn: linkedin_post_{data_referencia}.txt")
+        print(
+            f"💡 Copie o conteúdo do arquivo LinkedIn e cole diretamente no LinkedIn!"
+        )
+
     except Exception as e:
         print(f"Ocorreu um erro: {e}")
 
