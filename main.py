@@ -112,7 +112,7 @@ def salvar_relatorio(conteudo: str, data_referencia: str) -> str:
 
 # === ENVIA O RELATÓRIO POR E-MAIL ===
 async def enviar_email(conteudo: str, caminho_arquivo: str, data_referencia: str):
-    destinatario = "coimbrawebs@gmail.com"
+    destinatario = EMAIL
     assunto = f"Relatório de Notícias - {data_referencia}"
 
     try:
